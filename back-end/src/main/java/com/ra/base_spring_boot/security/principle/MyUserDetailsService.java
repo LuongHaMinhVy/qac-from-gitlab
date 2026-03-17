@@ -1,7 +1,7 @@
 package com.ra.base_spring_boot.security.principle;
 
-import com.ra.base_spring_boot.model.User;
-import com.ra.base_spring_boot.repository.IUserRepository;
+import com.ra.base_spring_boot.model.*;
+import com.ra.base_spring_boot.repository.account.IAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,25 +9,41 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class MyUserDetailsService implements UserDetailsService
-{
-    private final IUserRepository userRepository;
+public class MyUserDetailsService implements UserDetailsService {
+
+    private final IAccountRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
-    {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username + " not found"));
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
 
+        Account account = userRepository.findByUsernameWithRolesAndPermissions(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username + " not found"));
+
+        Set<GrantedAuthority> authorities = new HashSet<>();
+
+        for (AccountRole accountRole : account.getAccountRoles()) {
+            Role role = accountRole.getRole();
+
+            authorities.add(new SimpleGrantedAuthority(role.getRoleCode().name()));
+
+            for (RolePermission rp : role.getRolePermissions()) {
+                Permission permission = rp.getPermission();
+                authorities.add(new SimpleGrantedAuthority(permission.getPermissionCode()));
+            }
+        }
 
         return MyUserDetails.builder()
-                .user(user)
-                .authorities(user.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName().toString())).toList())
+                .account(account)
+                .authorities(authorities)
                 .build();
     }
 }

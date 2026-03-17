@@ -1,11 +1,12 @@
 package com.ra.base_spring_boot.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ra.base_spring_boot.model.base.BaseObject;
+import com.ra.base_spring_boot.model.constants.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -13,24 +14,41 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-public class User extends BaseObject
-{
-    @Column(name = "full_name")
+@Table(name = "UserProfiles")
+public class User extends BaseObject {
+
+    @OneToOne
+    @JoinColumn(name = "AccountID", unique = true)
+    private Account account;
+
+    @Column(name = "FullName", nullable = false, length = 100)
     private String fullName;
-    @Column(name = "username")
-    private String username;
 
-    @JsonIgnore
-    @Column(name = "passwordF")
-    private String password;
+    @Column(name = "Phone", length = 20)
+    private String phone;
 
-    private Boolean status;
+    @ManyToOne
+    @JoinColumn(name = "AvatarID")
+    private Media avatar;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles;
+    @Column(name = "Bio", columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(name = "DateOfBirth")
+    private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Gender", length = 10)
+    private Gender gender;
+
+    @Column(name = "Address", columnDefinition = "TEXT")
+    private String address;
+
+    @Builder.Default
+    @Column(name = "CreatedAt", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    @Column(name = "UpdatedAt")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

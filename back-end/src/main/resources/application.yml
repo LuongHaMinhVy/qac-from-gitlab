@@ -1,10 +1,21 @@
 spring:
   application:
     name: base_spring_boot
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 60MB
+  logging:
+    level:
+      com.ra.base_spring_boot.security.oauth2: DEBUG
+      com.ra.base_spring_boot.service.impl.auth: DEBUG
+      org.springframework.security.oauth2: DEBUG
+      org.springframework.security.web: DEBUG
   datasource:
-    url: jdbc:mysql://localhost:3307/base_core?createDatabaseIfNotExist=true
-    username: root
-    password: 123456
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
   jooq:
     sql-dialect: org.hibernate.dialect.MySQL8Dialect
   jpa:
@@ -17,10 +28,72 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Google
+
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+            scope:
+              - email
+              - public_profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Facebook
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+
+        provider:
+          facebook:
+            authorization-uri: https://www.facebook.com/v19.0/dialog/oauth
+            token-uri: https://graph.facebook.com/v19.0/oauth/access_token
+            user-info-uri: https://graph.facebook.com/v19.0/me?fields=id,name,email,picture.type(large)
+            user-name-attribute: id
+
+# JWT Configuration
 jwt:
   secret:
-    key: Ascmkkqdnmsdfrtgsyuhidj21ue120938219321ndsad
+    key: ${JWT_SECRET}
   expired:
-    access: 864000
+    access: ${JWT_EXPIRED_ACCESS:86400000}
 
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+# App Configuration
+app:
+  frontend:
+    oauth2-redirect-path: /oauth2/redirect
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
+    allowed-headers: "*"
+    allow-credentials: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework

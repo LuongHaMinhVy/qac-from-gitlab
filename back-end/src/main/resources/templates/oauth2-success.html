@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OAuth2 Login Success</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        padding: 40px;
+      }
+
+      .success-icon {
+        text-align: center;
+        font-size: 64px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #2d3748;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 30px;
+        font-size: 16px;
+      }
+
+      .info-section {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 14px;
+      }
+
+      .info-value {
+        color: #2d3748;
+        font-size: 14px;
+        text-align: right;
+        max-width: 60%;
+        word-break: break-all;
+      }
+
+      .token-section {
+        background: #edf2f7;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+      }
+
+      .token-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .token-value {
+        background: white;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        padding: 12px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        color: #2d3748;
+        word-break: break-all;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+
+      .copy-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 10px;
+        width: 100%;
+        transition: background 0.3s;
+      }
+
+      .copy-btn:hover {
+        background: #5568d3;
+      }
+
+      .copy-btn:active {
+        background: #4457c2;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .badge-success {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .badge-info {
+        background: #bee3f8;
+        color: #2c5282;
+      }
+
+      .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        display: block;
+        border: 3px solid #667eea;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="success-icon">✅</div>
+      <h1>Đăng Nhập Thành Công!</h1>
+      <p class="subtitle">OAuth2 Authentication Successful</p>
+
+      <div class="info-section">
+        <div class="info-row">
+          <span class="info-label">Provider:</span>
+          <span class="info-value">
+            <span class="badge badge-info" th:text="${provider}">GOOGLE</span>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Username:</span>
+          <span class="info-value" th:text="${username}">username</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value" th:text="${email}">email@example.com</span>
+        </div>
+        <div class="info-row" th:if="${fullName}">
+          <span class="info-label">Full Name:</span>
+          <span class="info-value" th:text="${fullName}">Full Name</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">New User:</span>
+          <span class="info-value">
+            <span class="badge badge-success" th:if="${isNewUser == 'true'}"
+              >Yes</span
+            >
+            <span class="badge badge-info" th:if="${isNewUser != 'true'}"
+              >No</span
+            >
+          </span>
+        </div>
+        <div class="info-row" th:if="${message}">
+          <span class="info-label">Message:</span>
+          <span class="info-value" th:text="${message}">Message</span>
+        </div>
+      </div>
+
+      <div class="token-section">
+        <div class="token-label">JWT Token:</div>
+        <div class="token-value" id="tokenValue" th:text="${token}">
+          Your JWT token will appear here
+        </div>
+        <button class="copy-btn" onclick="copyToken()">📋 Copy Token</button>
+      </div>
+
+      <div
+        style="
+          margin-top: 20px;
+          text-align: center;
+          color: #718096;
+          font-size: 12px;
+        "
+      >
+        <p>Token này có thể được sử dụng để gọi các API endpoints</p>
+        <p>Format: Authorization: Bearer &lt;token&gt;</p>
+      </div>
+    </div>
+
+    <script>
+      function copyToken() {
+        const tokenElement = document.getElementById("tokenValue");
+        const token = tokenElement.textContent;
+
+        navigator.clipboard
+          .writeText(token)
+          .then(function () {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = "✅ Copied!";
+            btn.style.background = "#48bb78";
+
+            setTimeout(function () {
+              btn.textContent = originalText;
+              btn.style.background = "#667eea";
+            }, 2000);
+          })
+          .catch(function (err) {
+            alert("Failed to copy token: " + err);
+          });
+      }
+    </script>
+  </body>
+</html>
